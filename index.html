@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Remote Latinos — Org Chart</title>
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
 <style>
   :root {
     --bg: #0a0a0f;
@@ -26,52 +26,53 @@
     color: var(--text);
     font-family: 'DM Sans', sans-serif;
     min-height: 100vh;
-    overflow-x: hidden;
+    overflow: hidden;
+    user-select: none;
   }
 
   header {
-    padding: 32px 48px 24px;
+    padding: 20px 32px;
     border-bottom: 1px solid var(--border);
     display: flex;
     align-items: center;
-    gap: 20px;
+    gap: 16px;
     background: linear-gradient(135deg, #13131a 0%, #0f0f18 100%);
+    position: fixed; top: 0; left: 0; right: 0; z-index: 50;
+    flex-wrap: wrap;
   }
 
   .logo-mark {
-    width: 44px; height: 44px;
+    width: 40px; height: 40px;
     background: linear-gradient(135deg, var(--accent), var(--accent2));
-    border-radius: 12px;
+    border-radius: 10px;
     display: flex; align-items: center; justify-content: center;
     font-family: 'Syne', sans-serif;
-    font-weight: 800; font-size: 18px; color: #fff;
+    font-weight: 800; font-size: 16px; color: #fff;
     flex-shrink: 0;
   }
 
-  header h1 {
+  .header-text h1 {
     font-family: 'Syne', sans-serif;
-    font-size: 22px; font-weight: 700;
+    font-size: 20px; font-weight: 700;
     letter-spacing: -0.5px;
   }
-  header span { color: var(--muted); font-size: 13px; font-weight: 300; display: block; margin-top: 2px; }
+  .header-text span { color: var(--muted); font-size: 12px; font-weight: 300; display: block; margin-top: 1px; }
 
   .controls {
     margin-left: auto;
-    display: flex; gap: 10px; align-items: center;
+    display: flex; gap: 8px; align-items: center; flex-wrap: wrap;
   }
 
-  .dept-filter {
-    display: flex; gap: 6px; flex-wrap: wrap;
-  }
+  .dept-filter { display: flex; gap: 5px; flex-wrap: wrap; }
 
   .filter-btn {
-    padding: 5px 13px;
+    padding: 4px 12px;
     border-radius: 20px;
     border: 1px solid var(--border);
     background: transparent;
     color: var(--muted);
     font-family: 'DM Sans', sans-serif;
-    font-size: 12px;
+    font-size: 11px;
     cursor: pointer;
     transition: all 0.2s;
   }
@@ -81,20 +82,87 @@
     color: #fff;
   }
 
-  .chart-wrapper {
-    padding: 40px 24px;
-    overflow-x: auto;
+  .zoom-controls {
+    display: flex; gap: 4px; align-items: center;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 3px;
+  }
+  .zoom-btn {
+    width: 26px; height: 26px;
+    border: none; border-radius: 5px;
+    background: transparent;
+    color: var(--muted);
+    cursor: pointer; font-size: 14px;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.15s;
+  }
+  .zoom-btn:hover { background: var(--border); color: var(--text); }
+  .zoom-label {
+    font-size: 11px; color: var(--muted);
+    min-width: 38px; text-align: center;
+    font-family: 'DM Sans', sans-serif;
+  }
+
+  /* Viewport */
+  .viewport {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    overflow: hidden;
+    cursor: grab;
+    margin-top: 65px;
+  }
+  .viewport:active { cursor: grabbing; }
+
+  .canvas {
+    position: absolute;
+    transform-origin: 0 0;
+    padding: 60px 80px 120px;
+    will-change: transform;
+  }
+
+  /* Company info banner */
+  .company-banner {
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+    border: 1px solid rgba(124,92,252,0.3);
+    border-radius: 16px;
+    padding: 20px 28px;
+    margin-bottom: 40px;
+    max-width: 900px;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 20px;
+  }
+  .banner-section h3 {
+    font-family: 'Syne', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--accent3);
+    margin-bottom: 6px;
+  }
+  .banner-section p {
+    font-size: 12px;
+    color: #b0b0c8;
+    line-height: 1.6;
+  }
+  .banner-section .stat {
+    font-family: 'Syne', sans-serif;
+    font-size: 22px;
+    font-weight: 800;
+    color: var(--gold);
+    display: block;
+    margin-bottom: 2px;
   }
 
   .tree {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 0;
-    min-width: 1200px;
   }
 
-  /* Connector lines */
   .level-connector {
     display: flex;
     flex-direction: column;
@@ -110,7 +178,6 @@
   .horiz-line {
     height: 2px;
     background: var(--border);
-    margin: 0;
   }
 
   .branch-row {
@@ -127,17 +194,15 @@
     align-items: center;
   }
 
-  .branch-col .vert-line {
-    background: var(--border);
-  }
+  .branch-col .vert-line { background: var(--border); }
 
   /* Cards */
   .card {
     background: var(--card);
     border: 1px solid var(--border);
     border-radius: 14px;
-    padding: 16px 18px;
-    width: 190px;
+    padding: 14px 16px;
+    width: 185px;
     cursor: pointer;
     transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
     position: relative;
@@ -154,9 +219,10 @@
   }
 
   .card:hover {
-    transform: translateY(-3px);
+    transform: translateY(-4px) scale(1.02);
     border-color: var(--dept-color, var(--accent));
-    box-shadow: 0 12px 32px rgba(0,0,0,0.4), 0 0 0 1px var(--dept-color, var(--accent))22;
+    box-shadow: 0 16px 40px rgba(0,0,0,0.5), 0 0 0 1px var(--dept-color, var(--accent));
+    z-index: 10;
   }
 
   .card.ceo {
@@ -166,32 +232,31 @@
   }
 
   .card.highlighted { border-color: var(--dept-color, var(--accent)); }
-  .card.dimmed { opacity: 0.3; pointer-events: none; }
+  .card.dimmed { opacity: 0.2; pointer-events: none; }
 
   .card-avatar {
-    width: 36px; height: 36px;
+    width: 34px; height: 34px;
     border-radius: 50%;
     background: linear-gradient(135deg, var(--dept-color, var(--accent)), var(--accent2));
     display: flex; align-items: center; justify-content: center;
     font-family: 'Syne', sans-serif;
-    font-weight: 700; font-size: 13px;
+    font-weight: 700; font-size: 12px;
     color: #fff;
-    margin-bottom: 10px;
-    flex-shrink: 0;
+    margin-bottom: 9px;
   }
 
   .card-name {
     font-family: 'Syne', sans-serif;
-    font-size: 13px; font-weight: 600;
+    font-size: 12px; font-weight: 600;
     line-height: 1.3;
-    margin-bottom: 4px;
+    margin-bottom: 3px;
   }
 
   .card-role {
-    font-size: 11px;
+    font-size: 10px;
     color: var(--muted);
     line-height: 1.4;
-    margin-bottom: 8px;
+    margin-bottom: 7px;
   }
 
   .card-salary {
@@ -201,7 +266,7 @@
     background: rgba(255,255,255,0.04);
     border: 1px solid var(--border);
     border-radius: 6px;
-    padding: 3px 8px;
+    padding: 2px 7px;
     font-size: 10px;
     color: var(--gold);
     font-weight: 500;
@@ -212,7 +277,7 @@
     align-items: center;
     gap: 4px;
     border-radius: 5px;
-    padding: 2px 7px;
+    padding: 2px 6px;
     font-size: 10px;
     font-weight: 500;
     margin-top: 4px;
@@ -223,9 +288,9 @@
   /* Modal */
   .modal-overlay {
     position: fixed; inset: 0;
-    background: rgba(0,0,0,0.7);
-    backdrop-filter: blur(8px);
-    z-index: 100;
+    background: rgba(0,0,0,0.75);
+    backdrop-filter: blur(10px);
+    z-index: 200;
     display: none;
     align-items: center;
     justify-content: center;
@@ -237,10 +302,12 @@
     border: 1px solid var(--border);
     border-radius: 20px;
     padding: 32px;
-    max-width: 440px;
+    max-width: 460px;
     width: 90%;
     position: relative;
     animation: pop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    max-height: 90vh;
+    overflow-y: auto;
   }
 
   @keyframes pop {
@@ -271,14 +338,14 @@
 
   .modal-name {
     font-family: 'Syne', sans-serif;
-    font-size: 22px; font-weight: 700;
+    font-size: 21px; font-weight: 700;
     margin-bottom: 4px;
   }
   .modal-role { font-size: 14px; color: var(--muted); margin-bottom: 20px; }
 
   .modal-grid {
     display: grid; grid-template-columns: 1fr 1fr;
-    gap: 12px; margin-bottom: 20px;
+    gap: 10px; margin-bottom: 16px;
   }
 
   .modal-field {
@@ -291,9 +358,7 @@
     display: block; font-size: 10px; color: var(--muted);
     text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 4px;
   }
-  .modal-field span {
-    font-size: 13px; font-weight: 500;
-  }
+  .modal-field span { font-size: 13px; font-weight: 500; }
   .modal-field.full { grid-column: 1 / -1; }
 
   .modal-salary {
@@ -311,23 +376,32 @@
     font-size: 11px; font-weight: 500; margin: 2px 2px 2px 0;
   }
 
-  /* Legend */
-  .legend {
-    display: flex; gap: 16px; flex-wrap: wrap;
-    padding: 16px 48px;
+  /* Legend + hint bar */
+  .bottom-bar {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+    padding: 10px 28px;
     border-top: 1px solid var(--border);
     background: var(--surface);
+    z-index: 50;
   }
   .legend-item {
     display: flex; align-items: center; gap: 6px;
-    font-size: 12px; color: var(--muted);
+    font-size: 11px; color: var(--muted);
   }
-  .legend-dot {
-    width: 10px; height: 10px;
-    border-radius: 50%;
+  .legend-dot { width: 9px; height: 9px; border-radius: 50%; }
+
+  .hint {
+    margin-left: auto;
+    font-size: 11px;
+    color: var(--muted);
+    font-style: italic;
   }
 
-  /* Responsive spacers for branches */
   .spacer { width: 20px; flex-shrink: 0; }
 </style>
 </head>
@@ -335,36 +409,64 @@
 
 <header>
   <div class="logo-mark">RL</div>
-  <div>
+  <div class="header-text">
     <h1>Remote Latinos</h1>
-    <span>Organizational Chart — 27 Team Members</span>
+    <span>Organizational Chart · 28 Team Members</span>
   </div>
   <div class="controls">
     <div class="dept-filter" id="deptFilter">
-      <button class="filter-btn active" onclick="filterDept('all')">All</button>
-      <button class="filter-btn" onclick="filterDept('Operations')">Operations</button>
-      <button class="filter-btn" onclick="filterDept('Platform Development')">Platform</button>
-      <button class="filter-btn" onclick="filterDept('Sales')">Sales</button>
-      <button class="filter-btn" onclick="filterDept('Content')">Content</button>
-      <button class="filter-btn" onclick="filterDept('Hiring Consultants')">Hiring</button>
-      <button class="filter-btn" onclick="filterDept('Recruiter')">Recruiting</button>
+      <button class="filter-btn active" onclick="filterDept('all',event)">All</button>
+      <button class="filter-btn" onclick="filterDept('Operations',event)">Operations</button>
+      <button class="filter-btn" onclick="filterDept('Platform Development',event)">Platform</button>
+      <button class="filter-btn" onclick="filterDept('Sales',event)">Sales</button>
+      <button class="filter-btn" onclick="filterDept('Content',event)">Content</button>
+      <button class="filter-btn" onclick="filterDept('Hiring Consultants',event)">Hiring</button>
+      <button class="filter-btn" onclick="filterDept('Recruiter',event)">Recruiting</button>
+    </div>
+    <div class="zoom-controls">
+      <button class="zoom-btn" onclick="changeZoom(-0.15)">−</button>
+      <span class="zoom-label" id="zoomLabel">100%</span>
+      <button class="zoom-btn" onclick="changeZoom(0.15)">+</button>
+      <button class="zoom-btn" onclick="resetZoom()" title="Reset view">⌂</button>
     </div>
   </div>
 </header>
 
-<div class="chart-wrapper">
-  <div class="tree" id="tree"></div>
+<div class="viewport" id="viewport">
+  <div class="canvas" id="canvas">
+
+    <!-- Company Banner -->
+    <div class="company-banner">
+      <div class="banner-section">
+        <h3>Who We Are</h3>
+        <p>Remote Latinos connects US & Canadian businesses with top-tier Latin American remote talent — from appointment setters and closers to VAs and recruiters.</p>
+      </div>
+      <div class="banner-section">
+        <h3>Our Services</h3>
+        <p><strong style="color:#e8e8f0">Talent Hunt</strong> — Done-for-you recruitment, $3.5k–$4k one-time fee. Vetted shortlist of 3–6 candidates + 3 months of post-hire support.<br><br>
+        <strong style="color:#e8e8f0">Marketplace</strong> — Self-service DIY hiring platform, $297/mo Premium.</p>
+      </div>
+      <div class="banner-section">
+        <h3>By the Numbers</h3>
+        <span class="stat">28</span><p style="margin-top:-4px">Team members across 8 countries</p>
+        <div style="margin-top:10px"><span class="stat" style="font-size:16px">~15 days</span><p style="margin-top:-4px">Average time-to-hire (industry: 30)</p></div>
+      </div>
+    </div>
+
+    <div class="tree" id="tree"></div>
+  </div>
 </div>
 
-<div class="legend">
+<div class="bottom-bar">
   <div class="legend-item"><div class="legend-dot" style="background:#ffd166"></div> CEO / Leadership</div>
   <div class="legend-item"><div class="legend-dot" style="background:#7c5cfc"></div> Operations</div>
-  <div class="legend-item"><div class="legend-dot" style="background:#5cf0fc"></div> Platform Development</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#5cf0fc"></div> Platform Dev</div>
   <div class="legend-item"><div class="legend-dot" style="background:#fc5c7d"></div> Sales</div>
   <div class="legend-item"><div class="legend-dot" style="background:#5cfc9a"></div> Content</div>
-  <div class="legend-item"><div class="legend-dot" style="background:#fcb45c"></div> Hiring Consultants</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#fcb45c"></div> Hiring</div>
   <div class="legend-item"><div class="legend-dot" style="background:#c45cfc"></div> Recruiting</div>
   <div class="legend-item"><div class="legend-dot" style="background:#fc5c5c"></div> Finance / IT</div>
+  <span class="hint">🖱 Drag to pan · Scroll to zoom · Click card for details</span>
 </div>
 
 <!-- Modal -->
@@ -412,6 +514,7 @@
 </div>
 
 <script>
+// ─── DATA ───────────────────────────────────────────────────────
 const DEPT_COLORS = {
   'CEO': '#ffd166',
   'Operations': '#7c5cfc',
@@ -426,50 +529,151 @@ const DEPT_COLORS = {
 };
 
 const employees = [
-  { name: 'Omer Bloch', role: 'CEO', dept: 'CEO', supervisor: null, salary: null, contract: null, country: 'United States', email: 'omer@remotelatinos.com', labels: ['CEO'], initials: 'OB' },
-  { name: 'Mar Alamo', role: 'Product Manager', dept: 'Operations', supervisor: 'Omer Bloch', salary: null, contract: null, country: 'Venezuela', email: 'mar@remotelatinos.com', labels: ['Platform Development', 'Operations'], initials: 'MA' },
-  { name: 'Manuel Renteria', role: 'Operations Manager', dept: 'Operations', supervisor: 'Omer Bloch', salary: null, contract: null, country: 'Colombia', email: 'manuel@remotelatinos.com', labels: ['Operations'], initials: 'MR' },
-  { name: 'Alejandro Bravo', role: 'Systems Specialist', dept: 'Finance', supervisor: 'Omer Bloch', salary: 3000, contract: 'Fixed', country: 'Argentina', email: 'alejandro@remotelatinos.com', labels: ['Finance', 'Operations', 'It Support'], initials: 'AB' },
-  { name: 'Esteban Andrade', role: 'Content Director', dept: 'Content', supervisor: 'Omer Bloch', salary: null, contract: null, country: '—', email: '—', labels: ['Content'], initials: 'EA' },
-  { name: 'Johan Giraldo', role: 'Hybrid Closer', dept: 'Sales', supervisor: 'Omer Bloch', salary: null, contract: 'By Commissions', country: 'Colombia', email: 'johan@remotelatinos.com', labels: ['Sales'], initials: 'JG' },
-  { name: 'Jane Ahmed', role: 'Appointment Setter', dept: 'Sales', supervisor: 'Omer Bloch', salary: null, contract: null, country: 'Egypt', email: 'jane@remotelatinos.com', labels: ['Sales'], initials: 'JA' },
-  { name: 'Michael Dutra', role: 'Hybrid Closer', dept: 'Sales', supervisor: 'Omer Bloch', salary: null, contract: null, country: 'United States', email: 'michael.d@remotelatinos.com', labels: ['Operations'], initials: 'MD' },
-  { name: 'Armani Taffa', role: 'Hybrid Closer', dept: 'Sales', supervisor: 'Omer Bloch', salary: null, contract: null, country: 'Spain', email: 'armani@remotelatinos.com', labels: ['Operations'], initials: 'AT' },
-  // Mar's reports
-  { name: 'Daniel Villa', role: 'QA Assistant', dept: 'Platform Development', supervisor: 'Mar Alamo', salary: null, contract: null, country: 'Bolivia', email: 'daniel@remotelatinos.com', labels: ['Platform Development'], initials: 'DV' },
-  { name: 'Luis Alvarez', role: 'Backend Developer', dept: 'Platform Development', supervisor: 'Mar Alamo', salary: null, contract: null, country: 'Venezuela', email: 'luis@remotelatinos.com', labels: ['Platform Development'], initials: 'LA' },
-  { name: 'Jeyson Lesmes', role: 'Full Stack Developer', dept: 'Platform Development', supervisor: 'Mar Alamo', salary: null, contract: null, country: 'Colombia', email: 'Jeyson@remotelatinos.com', labels: ['Platform Development'], initials: 'JL' },
-  { name: 'Laura Gómez', role: 'UI/UX Designer', dept: 'Platform Development', supervisor: 'Mar Alamo', salary: null, contract: null, country: 'Colombia', email: 'lauragomez@remotelatinos.com', labels: ['Platform Development'], initials: 'LG' },
-  { name: 'Daniel Amador', role: 'Frontend Developer', dept: 'Platform Development', supervisor: 'Mar Alamo', salary: null, contract: null, country: 'Colombia', email: 'daniel.amador@remotelatinos.com', labels: ['Platform Development'], initials: 'DA' },
-  // Manuel's reports
-  { name: 'Mateo Cortazar', role: 'Hiring Consultant', dept: 'Hiring Consultants', supervisor: 'Manuel Renteria', salary: null, contract: null, country: 'Colombia', email: 'mateo@remotelatinos.com', labels: ['Hiring Consultants'], initials: 'MC' },
-  { name: 'Minerva Solarte', role: 'Recruiter', dept: 'Recruiter', supervisor: 'Manuel Renteria', salary: 900, contract: 'Hourly', country: 'Venezuela', email: 'Minerva@remotelatinos.com', labels: ['Candidate Success', 'Recruiter'], initials: 'MS' },
-  { name: 'Luis Martinez', role: 'Systems Specialist', dept: 'Operations', supervisor: 'Manuel Renteria', salary: null, contract: null, country: 'Mexico', email: 'luis.m@remotelatinos.com', labels: ['Operations', 'It Support'], initials: 'LM' },
-  { name: 'Andres Sierra', role: 'SEO Specialist', dept: 'Platform Development', supervisor: 'Manuel Renteria', salary: null, contract: null, country: 'Venezuela', email: 'andres@remotelatinos.com', labels: ['Platform Development', 'Marketing'], initials: 'AS' },
-  { name: 'Laura Cortés', role: 'Project Operator', dept: 'Operations', supervisor: 'Manuel Renteria', salary: 1800, contract: 'Fixed', country: 'Colombia', email: 'laura.c@remotelatinos.com', labels: ['Operations'], initials: 'LC' },
-  // Mateo's reports
-  { name: 'Matt Chavez', role: 'Hiring Consultant', dept: 'Hiring Consultants', supervisor: 'Mateo Cortazar', salary: null, contract: null, country: 'Colombia', email: 'matt@remotelatinos.com', labels: ['Hiring Consultants'], initials: 'MCh' },
-  { name: 'Jorge Estrada', role: 'Hiring Consultant', dept: 'Hiring Consultants', supervisor: 'Mateo Cortazar', salary: null, contract: null, country: 'Colombia', email: 'jorge@remotelatinos.com', labels: ['Hiring Consultants'], initials: 'JE' },
-  // Minerva's reports
-  { name: 'Luisana López', role: 'Recruiter', dept: 'Recruiter', supervisor: 'Minerva Solarte', salary: null, contract: null, country: 'Venezuela', email: 'luisana@remotelatinos.com', labels: ['Candidate Success', 'Recruiter'], initials: 'LL' },
-  { name: 'Ricardo Bogotá', role: 'Recruiter', dept: 'Recruiter', supervisor: 'Minerva Solarte', salary: 900, contract: 'Hourly', country: 'Colombia', email: 'ricardo@remotelatinos.com', labels: ['Candidate Success', 'Recruiter'], initials: 'RB' },
-  // Esteban's reports
-  { name: 'MaFe Morales', role: 'Content Growth Manager', dept: 'Content', supervisor: 'Esteban Andrade', salary: 1500, contract: 'Fixed', country: 'Colombia', email: 'Maria@remotelatinos.com', labels: ['Content', 'Marketing'], initials: 'MM' },
-  { name: 'David Guataquira', role: 'Content Consultant', dept: 'Content', supervisor: 'Esteban Andrade', salary: null, contract: null, country: 'Colombia', email: 'david.g@remotelatinos.com', labels: ['Content'], initials: 'DG' },
-  { name: 'Paola Briñez', role: 'Content Growth Manager', dept: 'Content', supervisor: 'Esteban Andrade', salary: 1500, contract: 'Fixed', country: 'Colombia', email: 'paola.r@remotelatinos.com', labels: ['Content', 'Marketing'], initials: 'PB' },
-  // MaFe's reports
-  { name: 'David Borja', role: 'Video Editor & Graphic Design', dept: 'Content', supervisor: 'MaFe Morales', salary: null, contract: null, country: 'Colombia', email: 'david@remotelatinos.com', labels: ['Content'], initials: 'DB' },
-  { name: 'Vanessa Beltrán', role: 'Content Growth Manager', dept: 'Content', supervisor: 'MaFe Morales', salary: null, contract: null, country: 'American Samoa', email: 'Laura@remotelatinos.com', labels: ['Content'], initials: 'VB' },
+  // ── C-Suite
+  { name: 'Omer Bloch', role: 'CEO', dept: 'CEO', supervisor: null, salary: null, contract: null, country: 'United States', email: 'omer@remotelatinos.com', labels: ['CEO'], initials: 'OB',
+    desc: 'Founder and CEO of Remote Latinos. Leads overall company strategy, sales, and growth. Oversees all departments and drives revenue targets. Active closer on high-value deals.' },
+
+  // ── L1 direct reports
+  { name: 'Mar Alamo', role: 'Product Manager', dept: 'Platform Development', supervisor: 'Omer Bloch', salary: null, contract: null, country: 'Venezuela', email: 'mar@remotelatinos.com', labels: ['Platform Development', 'Operations'], initials: 'MA',
+    desc: 'Leads the Marketplace platform development team. Manages developers, QA, and design to build and maintain the self-service hiring platform. Bridges product vision with technical execution.' },
+  { name: 'Manuel Renteria', role: 'COO / Operations Manager', dept: 'Operations', supervisor: 'Omer Bloch', salary: null, contract: null, country: 'Colombia', email: 'manuel@remotelatinos.com', labels: ['Operations'], initials: 'MR',
+    desc: 'Co-founder managing day-to-day operations, hiring pipelines, systems infrastructure (GHL, automations), and team performance. Oversees recruiting, hiring consultants, and operational KPIs. Also handles payroll and internal finance.' },
+  { name: 'Alejandro Bravo', role: 'Systems & Finance Specialist', dept: 'Finance', supervisor: 'Omer Bloch', salary: 3000, contract: 'Fixed', country: 'Argentina', email: 'alejandro@remotelatinos.com', labels: ['Finance', 'Operations', 'It Support'], initials: 'AB',
+    desc: 'Manages financial tracking, payroll projections, and IT systems support. Works closely with the operations team to maintain internal infrastructure and financial reporting.' },
+  { name: 'Esteban Andrade', role: 'CMO', dept: 'Content', supervisor: 'Omer Bloch', salary: null, contract: null, country: 'Colombia', email: 'esteban@remotelatinos.com', labels: ['Content', 'Marketing'], initials: 'EA',
+    desc: 'Chief Marketing Officer. Leads all marketing strategy, brand direction, and content operations. Oversees content managers, social media growth, and inbound lead generation through organic and paid channels.' },
+  { name: 'Johan Giraldo', role: 'Hybrid Closer', dept: 'Sales', supervisor: 'Omer Bloch', salary: null, contract: 'By Commissions', country: 'Colombia', email: 'johan@remotelatinos.com', labels: ['Sales'], initials: 'JG',
+    desc: 'Senior closer with 2.5+ years at Remote Latinos. Handles high-ticket Talent Hunt sales calls and client negotiations. Commission-based role.' },
+  { name: 'Jane Ahmed', role: 'Appointment Setter', dept: 'Sales', supervisor: 'Omer Bloch', salary: null, contract: null, country: 'Egypt', email: 'jane@remotelatinos.com', labels: ['Sales'], initials: 'JA',
+    desc: 'Appointment setter responsible for qualifying inbound leads and booking discovery calls for the closing team.' },
+  { name: 'Michael Dutra', role: 'Hybrid Closer', dept: 'Sales', supervisor: 'Omer Bloch', salary: null, contract: null, country: 'United States', email: 'michael.d@remotelatinos.com', labels: ['Sales'], initials: 'MD',
+    desc: 'Closer focused on converting qualified prospects into Talent Hunt clients. Handles end-to-end sales calls and deal management.' },
+  { name: 'Armani Taffa', role: 'Hybrid Closer', dept: 'Sales', supervisor: 'Omer Bloch', salary: null, contract: null, country: 'Spain', email: 'armani@remotelatinos.com', labels: ['Sales'], initials: 'AT',
+    desc: 'Closer onboarded to scale the sales team capacity. Works toward 5+ closed deals per week in coordination with appointment setters.' },
+
+  // ── Mar's reports (Platform Dev)
+  { name: 'Daniel Villa', role: 'QA Assistant', dept: 'Platform Development', supervisor: 'Mar Alamo', salary: null, contract: null, country: 'Bolivia', email: 'daniel@remotelatinos.com', labels: ['Platform Development'], initials: 'DV',
+    desc: 'Quality assurance for the Marketplace platform. Tests new features, identifies bugs, and ensures product stability before releases.' },
+  { name: 'Luis Alvarez', role: 'Backend Developer', dept: 'Platform Development', supervisor: 'Mar Alamo', salary: null, contract: null, country: 'Venezuela', email: 'luis@remotelatinos.com', labels: ['Platform Development'], initials: 'LA',
+    desc: 'Backend developer responsible for APIs, database architecture, and server-side logic for the Remote Latinos Marketplace platform.' },
+  { name: 'Jeyson Lesmes', role: 'Full Stack Developer', dept: 'Platform Development', supervisor: 'Mar Alamo', salary: null, contract: null, country: 'Colombia', email: 'Jeyson@remotelatinos.com', labels: ['Platform Development'], initials: 'JL',
+    desc: 'Full stack developer working across frontend and backend layers of the Marketplace platform.' },
+  { name: 'Laura Gómez', role: 'UI/UX Designer', dept: 'Platform Development', supervisor: 'Mar Alamo', salary: null, contract: null, country: 'Colombia', email: 'lauragomez@remotelatinos.com', labels: ['Platform Development'], initials: 'LG',
+    desc: 'Designs the user experience and visual interface of the Marketplace platform. Ensures intuitive design for both clients and candidates.' },
+  { name: 'Daniel Amador', role: 'Frontend Developer', dept: 'Platform Development', supervisor: 'Mar Alamo', salary: null, contract: null, country: 'Colombia', email: 'daniel.amador@remotelatinos.com', labels: ['Platform Development'], initials: 'DA',
+    desc: 'Frontend developer building the client-facing Marketplace interface with a focus on responsiveness and performance.' },
+
+  // ── Manuel's reports (Operations)
+  { name: 'Mateo Cortazar', role: 'Hiring Consultant Lead', dept: 'Hiring Consultants', supervisor: 'Manuel Renteria', salary: null, contract: null, country: 'Colombia', email: 'mateo@remotelatinos.com', labels: ['Hiring Consultants'], initials: 'MC',
+    desc: 'Leads the hiring consultant team. Manages the shortlisting process for Talent Hunt clients — reviewing recruiter candidate batches and presenting the top 3–6 profiles. Supervises Matt and Jorge.' },
+  { name: 'Minerva Solarte', role: 'Lead Recruiter', dept: 'Recruiter', supervisor: 'Manuel Renteria', salary: 900, contract: 'Hourly', country: 'Venezuela', email: 'Minerva@remotelatinos.com', labels: ['Candidate Success', 'Recruiter'], initials: 'MS',
+    desc: 'Lead recruiter managing the sourcing pipeline for Talent Hunt placements. Oversees the recruiter team (Luisana, Ricardo) and ensures quality batches of 5–10 vetted candidates are delivered to hiring consultants.' },
+  { name: 'Luis Martinez', role: 'Systems Specialist', dept: 'Operations', supervisor: 'Manuel Renteria', salary: null, contract: null, country: 'Mexico', email: 'luis.m@remotelatinos.com', labels: ['Operations', 'It Support'], initials: 'LM',
+    desc: 'Systems and automation specialist. Manages CRM (GHL), internal automations via Make, Slack bots, and integration infrastructure. Daniel Ruiz works closely with Luis on systems projects.' },
+  { name: 'Jose Daniel Ruiz', role: 'Systems & AI Specialist', dept: 'Operations', supervisor: 'Manuel Renteria', salary: null, contract: null, country: 'Germany', email: 'daniel.ruiz@remotelatinos.com', labels: ['Operations', 'It Support'], initials: 'JD',
+    desc: 'Systems and AI specialist in Operations, reporting to Manuel. Works closely with Luis Martinez on automation projects. Currently building a social media automation system that publishes content from Notion on schedule. Onboarded June 2026.' },
+  { name: 'Andres Sierra', role: 'SEO Specialist', dept: 'Platform Development', supervisor: 'Manuel Renteria', salary: null, contract: null, country: 'Venezuela', email: 'andres@remotelatinos.com', labels: ['Platform Development', 'Marketing'], initials: 'AS',
+    desc: 'SEO and organic growth specialist. Responsible for search engine optimization across Remote Latinos digital properties, supporting both the Marketplace platform and marketing initiatives.' },
+  { name: 'Laura Cortés', role: 'Project Operator', dept: 'Operations', supervisor: 'Manuel Renteria', salary: 1800, contract: 'Fixed', country: 'Colombia', email: 'laura.c@remotelatinos.com', labels: ['Operations'], initials: 'LC',
+    desc: 'Project operator supporting operations management, process documentation, and cross-functional coordination across the Remote Latinos team.' },
+
+  // ── Mateo's reports
+  { name: 'Matt Chavez', role: 'Hiring Consultant', dept: 'Hiring Consultants', supervisor: 'Mateo Cortazar', salary: null, contract: null, country: 'Colombia', email: 'matt@remotelatinos.com', labels: ['Hiring Consultants'], initials: 'MCh',
+    desc: 'Hiring consultant responsible for reviewing recruiter candidate batches and presenting shortlisted profiles to Talent Hunt clients.' },
+  { name: 'Jorge Estrada', role: 'Hiring Consultant', dept: 'Hiring Consultants', supervisor: 'Mateo Cortazar', salary: null, contract: null, country: 'Colombia', email: 'jorge@remotelatinos.com', labels: ['Hiring Consultants'], initials: 'JE',
+    desc: 'Hiring consultant supporting client placements. Works within the Talent Hunt process to evaluate and present top candidate profiles.' },
+
+  // ── Minerva's reports
+  { name: 'Luisana López', role: 'Recruiter', dept: 'Recruiter', supervisor: 'Minerva Solarte', salary: null, contract: null, country: 'Venezuela', email: 'luisana@remotelatinos.com', labels: ['Candidate Success', 'Recruiter'], initials: 'LL',
+    desc: 'Recruiter responsible for sourcing and manually vetting candidates for Talent Hunt placements. Compiles batches of 5–10 profiles for hiring consultant review.' },
+  { name: 'Ricardo Bogotá', role: 'Recruiter', dept: 'Recruiter', supervisor: 'Minerva Solarte', salary: 900, contract: 'Hourly', country: 'Colombia', email: 'ricardo@remotelatinos.com', labels: ['Candidate Success', 'Recruiter'], initials: 'RB',
+    desc: 'Recruiter focused on candidate sourcing and vetting for client placements across various roles and industries.' },
+
+  // ── Esteban's reports (Content/Marketing)
+  { name: 'MaFe Morales', role: 'Content Growth Manager', dept: 'Content', supervisor: 'Esteban Andrade', salary: 1500, contract: 'Fixed', country: 'Colombia', email: 'Maria@remotelatinos.com', labels: ['Content', 'Marketing'], initials: 'MM',
+    desc: 'Content Growth Manager overseeing content strategy execution and social media growth. Manages the content production team including video editors and community managers. Coordinates content calendar via Notion.' },
+  { name: 'David Guataquira', role: 'Content Consultant', dept: 'Content', supervisor: 'Esteban Andrade', salary: null, contract: null, country: 'Colombia', email: 'david.g@remotelatinos.com', labels: ['Content'], initials: 'DG',
+    desc: 'Content consultant providing strategic guidance on content creation, messaging, and distribution to drive brand awareness and lead generation.' },
+  { name: 'Paola Briñez', role: 'Content Growth Manager', dept: 'Content', supervisor: 'Esteban Andrade', salary: 1500, contract: 'Fixed', country: 'Colombia', email: 'paola.r@remotelatinos.com', labels: ['Content', 'Marketing'], initials: 'PB',
+    desc: 'Content Growth Manager managing the Notion content database and coordinating publishing schedules. Oversees community management and content distribution across platforms (manual posting on X/Twitter).' },
+
+  // ── MaFe's reports
+  { name: 'David Borja', role: 'Video Editor & Graphic Design', dept: 'Content', supervisor: 'MaFe Morales', salary: null, contract: null, country: 'Colombia', email: 'david@remotelatinos.com', labels: ['Content'], initials: 'DB',
+    desc: 'Video editor and graphic designer creating visual content for Remote Latinos social media channels, ads, and brand materials.' },
+  { name: 'Vanessa Beltrán', role: 'Community Manager', dept: 'Content', supervisor: 'MaFe Morales', salary: null, contract: null, country: 'Colombia', email: 'Laura@remotelatinos.com', labels: ['Content'], initials: 'VB',
+    desc: 'Community manager handling social media engagement and manual content posting, including X (Twitter) where API automation is not available.' },
 ];
 
-function getDeptColor(dept) {
-  return DEPT_COLORS[dept] || '#7c5cfc';
+// ─── PAN & ZOOM ─────────────────────────────────────────────────
+const viewport = document.getElementById('viewport');
+const canvas = document.getElementById('canvas');
+let scale = 0.75, tx = 0, ty = 0;
+let isPanning = false, startX, startY, startTx, startTy;
+
+function applyTransform() {
+  canvas.style.transform = `translate(${tx}px,${ty}px) scale(${scale})`;
+  document.getElementById('zoomLabel').textContent = Math.round(scale * 100) + '%';
 }
 
-function getInitials(name) {
-  return name.split(' ').slice(0,2).map(n => n[0]).join('').toUpperCase();
+function resetZoom() {
+  scale = 0.75; tx = 40; ty = 10;
+  applyTransform();
 }
 
+function changeZoom(delta) {
+  scale = Math.min(2, Math.max(0.25, scale + delta));
+  applyTransform();
+}
+
+viewport.addEventListener('mousedown', e => {
+  if (e.target.closest('.card') || e.target.closest('.modal')) return;
+  isPanning = true;
+  startX = e.clientX; startY = e.clientY;
+  startTx = tx; startTy = ty;
+});
+window.addEventListener('mousemove', e => {
+  if (!isPanning) return;
+  tx = startTx + (e.clientX - startX);
+  ty = startTy + (e.clientY - startY);
+  applyTransform();
+});
+window.addEventListener('mouseup', () => isPanning = false);
+
+viewport.addEventListener('wheel', e => {
+  e.preventDefault();
+  const delta = e.deltaY > 0 ? -0.08 : 0.08;
+  const rect = viewport.getBoundingClientRect();
+  const mx = e.clientX - rect.left;
+  const my = e.clientY - rect.top;
+  const newScale = Math.min(2, Math.max(0.25, scale + delta));
+  tx = mx - (mx - tx) * (newScale / scale);
+  ty = my - (my - ty) * (newScale / scale);
+  scale = newScale;
+  applyTransform();
+}, { passive: false });
+
+// Touch pinch zoom
+let lastDist = null;
+viewport.addEventListener('touchstart', e => {
+  if (e.touches.length === 2) lastDist = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
+  else if (e.touches.length === 1) { isPanning = true; startX = e.touches[0].clientX; startY = e.touches[0].clientY; startTx = tx; startTy = ty; }
+}, { passive: true });
+viewport.addEventListener('touchmove', e => {
+  if (e.touches.length === 2) {
+    const dist = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
+    if (lastDist) { scale = Math.min(2, Math.max(0.25, scale * (dist / lastDist))); applyTransform(); }
+    lastDist = dist;
+  } else if (isPanning && e.touches.length === 1) {
+    tx = startTx + (e.touches[0].clientX - startX);
+    ty = startTy + (e.touches[0].clientY - startY);
+    applyTransform();
+  }
+}, { passive: true });
+viewport.addEventListener('touchend', () => { isPanning = false; lastDist = null; });
+
+// ─── TREE BUILDER ────────────────────────────────────────────────
+function getDeptColor(dept) { return DEPT_COLORS[dept] || '#7c5cfc'; }
+function getInitials(name) { return name.split(' ').slice(0,2).map(n => n[0]).join('').toUpperCase(); }
 function formatSalary(salary, contract) {
   if (!salary && contract === 'By Commissions') return 'Commission Only';
   if (!salary) return 'Not Listed';
@@ -480,9 +684,9 @@ function makeCard(emp, extraClass='') {
   const color = getDeptColor(emp.dept);
   const salaryStr = formatSalary(emp.salary, emp.contract);
   return `
-    <div class="card ${extraClass}" 
-         style="--dept-color:${color}" 
-         onclick="openModal('${emp.name.replace(/'/g,"\\'")}')">
+    <div class="card ${extraClass}"
+         style="--dept-color:${color}"
+         onclick="openModal('${emp.name.replace(/'/g,"\\'").replace(/"/g,'&quot;')}')">
       <div class="card-avatar">${getInitials(emp.name)}</div>
       <div class="card-name">${emp.name}</div>
       <div class="card-role">${emp.role}</div>
@@ -492,40 +696,29 @@ function makeCard(emp, extraClass='') {
 }
 
 function buildTree() {
-  // CEO
   const ceo = employees.find(e => e.role === 'CEO');
-  // L1 direct reports to CEO
   const l1 = employees.filter(e => e.supervisor === 'Omer Bloch');
-  // Group: managers vs ICs at L1
   const managers = ['Mar Alamo', 'Manuel Renteria', 'Esteban Andrade'];
   const ceoICs = l1.filter(e => !managers.includes(e.name));
   const ceoManagers = l1.filter(e => managers.includes(e.name));
 
   let html = '';
-
-  // CEO
   html += `<div class="level-connector">
     ${makeCard(ceo, 'ceo')}
     <div class="vert-line"></div>
   </div>`;
 
-  // Main branch line across managers
   const branchCount = ceoManagers.length + (ceoICs.length > 0 ? 1 : 0);
   const branchWidth = branchCount * 210 + (branchCount - 1) * 20;
   html += `<div style="width:${branchWidth}px;height:2px;background:var(--border);"></div>`;
-
-  // Build manager columns + ICs group
   html += `<div class="branch-row" style="gap:20px;">`;
 
-  ceoManagers.forEach((mgr, i) => {
+  ceoManagers.forEach(mgr => {
     const reports = employees.filter(e => e.supervisor === mgr.name);
     const subReports = {};
-    reports.forEach(r => {
-      subReports[r.name] = employees.filter(e => e.supervisor === r.name);
-    });
-
+    reports.forEach(r => { subReports[r.name] = employees.filter(e => e.supervisor === r.name); });
     const totalLeaves = reports.reduce((acc, r) => acc + Math.max(subReports[r.name].length, 1), 0);
-    const colWidth = Math.max(totalLeaves * 210 + (totalLeaves-1)*20, 210);
+    const colWidth = Math.max(totalLeaves * 210 + (totalLeaves - 1) * 20, 210);
 
     html += `<div class="branch-col" style="width:${colWidth}px;">
       <div class="vert-line"></div>
@@ -533,32 +726,25 @@ function buildTree() {
       <div class="vert-line"></div>`;
 
     if (reports.length > 0) {
-      // sub-branch line
-      const subW = reports.length * 210 + (reports.length-1)*20;
+      const subW = reports.length * 210 + (reports.length - 1) * 20;
       html += `<div style="width:${subW}px;height:2px;background:var(--border);"></div>`;
       html += `<div class="branch-row" style="gap:20px;">`;
-
       reports.forEach(rep => {
         const reps2 = subReports[rep.name];
-        const repColW = Math.max(reps2.length * 210 + (reps2.length-1)*20, 210);
+        const repColW = Math.max(reps2.length * 210 + (reps2.length - 1) * 20, 210);
         html += `<div class="branch-col" style="width:${repColW}px;">
           <div class="vert-line"></div>
           ${makeCard(rep)}`;
-
         if (reps2.length > 0) {
-          const subW2 = reps2.length * 210 + (reps2.length-1)*20;
-          html += `<div class="vert-line"></div>`;
-          html += `<div style="width:${subW2}px;height:2px;background:var(--border);"></div>`;
-          html += `<div class="branch-row" style="gap:20px;">`;
+          const subW2 = reps2.length * 210 + (reps2.length - 1) * 20;
+          html += `<div class="vert-line"></div>
+          <div style="width:${subW2}px;height:2px;background:var(--border);"></div>
+          <div class="branch-row" style="gap:20px;">`;
           reps2.forEach(r2 => {
-            html += `<div class="branch-col">
-              <div class="vert-line"></div>
-              ${makeCard(r2)}
-            </div>`;
+            html += `<div class="branch-col"><div class="vert-line"></div>${makeCard(r2)}</div>`;
           });
           html += `</div>`;
         }
-
         html += `</div>`;
       });
       html += `</div>`;
@@ -566,20 +752,14 @@ function buildTree() {
     html += `</div>`;
   });
 
-  // CEO ICs column
+  // CEO ICs
   if (ceoICs.length > 0) {
-    const icW = ceoICs.length * 210 + (ceoICs.length-1)*20;
+    const icW = ceoICs.length * 210 + (ceoICs.length - 1) * 20;
     html += `<div class="branch-col" style="width:${icW}px; align-items:flex-start;">
       <div style="margin-left:95px;" class="vert-line"></div>
-      <div style="font-family:'Syne',sans-serif;font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;padding-left:4px;">Direct ICs</div>
+      <div style="font-family:'Syne',sans-serif;font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;padding-left:4px;">Sales / Direct ICs</div>
       <div class="branch-row" style="gap:20px;align-items:flex-start;">`;
-
-    ceoICs.forEach(emp => {
-      html += `<div class="branch-col">
-        ${makeCard(emp)}
-      </div>`;
-    });
-
+    ceoICs.forEach(emp => { html += `<div class="branch-col">${makeCard(emp)}</div>`; });
     html += `</div></div>`;
   }
 
@@ -587,6 +767,7 @@ function buildTree() {
   document.getElementById('tree').innerHTML = html;
 }
 
+// ─── MODAL ──────────────────────────────────────────────────────
 function openModal(name) {
   const emp = employees.find(e => e.name === name);
   if (!emp) return;
@@ -602,36 +783,33 @@ function openModal(name) {
   document.getElementById('mCountry').textContent = emp.country || '—';
   document.getElementById('mEmail').textContent = emp.email || '—';
   document.getElementById('mTags').innerHTML = (emp.labels || []).map(l => `<span class="tag">${l}</span>`).join('');
+  if (emp.desc) {
+    document.getElementById('mDesc').textContent = emp.desc;
+    document.getElementById('mDescField').style.display = '';
+  } else {
+    document.getElementById('mDescField').style.display = 'none';
+  }
   document.getElementById('modalOverlay').classList.add('open');
 }
 
-function closeModal(e) {
-  if (e.target === document.getElementById('modalOverlay')) closeModalDirect();
-}
-function closeModalDirect() {
-  document.getElementById('modalOverlay').classList.remove('open');
-}
+function closeModal(e) { if (e.target === document.getElementById('modalOverlay')) closeModalDirect(); }
+function closeModalDirect() { document.getElementById('modalOverlay').classList.remove('open'); }
 
-function filterDept(dept) {
+function filterDept(dept, event) {
   document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-  event.target.classList.add('active');
+  if (event) event.target.classList.add('active');
   document.querySelectorAll('.card').forEach(card => {
-    if (dept === 'all') {
-      card.classList.remove('dimmed');
-    } else {
-      const emp = employees.find(e => e.name === card.querySelector('.card-name')?.textContent);
-      if (emp && (emp.dept === dept || emp.labels.includes(dept))) {
-        card.classList.remove('dimmed');
-      } else {
-        card.classList.add('dimmed');
-      }
-    }
+    if (dept === 'all') { card.classList.remove('dimmed'); return; }
+    const emp = employees.find(e => e.name === card.querySelector('.card-name')?.textContent);
+    if (emp && (emp.dept === dept || emp.labels.includes(dept))) card.classList.remove('dimmed');
+    else card.classList.add('dimmed');
   });
 }
 
-buildTree();
-
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModalDirect(); });
+
+buildTree();
+resetZoom();
 </script>
 </body>
 </html>
