@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Remote Latinos — Org Chart</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --surface: #13131a;
+    --card: #1a1a24;
+    --border: #2a2a3a;
+    --accent: #7c5cfc;
+    --accent2: #fc5c7d;
+    --accent3: #5cf0fc;
+    --text: #e8e8f0;
+    --muted: #6b6b88;
+    --gold: #ffd166;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  header {
+    padding: 32px 48px 24px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    background: linear-gradient(135deg, #13131a 0%, #0f0f18 100%);
+  }
+
+  .logo-mark {
+    width: 44px; height: 44px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Syne', sans-serif;
+    font-weight: 800; font-size: 18px; color: #fff;
+    flex-shrink: 0;
+  }
+
+  header h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: 22px; font-weight: 700;
+    letter-spacing: -0.5px;
+  }
+  header span { color: var(--muted); font-size: 13px; font-weight: 300; display: block; margin-top: 2px; }
+
+  .controls {
+    margin-left: auto;
+    display: flex; gap: 10px; align-items: center;
+  }
+
+  .dept-filter {
+    display: flex; gap: 6px; flex-wrap: wrap;
+  }
+
+  .filter-btn {
+    padding: 5px 13px;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--muted);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .filter-btn:hover, .filter-btn.active {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #fff;
+  }
+
+  .chart-wrapper {
+    padding: 40px 24px;
+    overflow-x: auto;
+  }
+
+  .tree {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0;
+    min-width: 1200px;
+  }
+
+  /* Connector lines */
+  .level-connector {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .vert-line {
+    width: 2px;
+    height: 28px;
+    background: linear-gradient(to bottom, var(--accent), var(--border));
+  }
+
+  .horiz-line {
+    height: 2px;
+    background: var(--border);
+    margin: 0;
+  }
+
+  .branch-row {
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    gap: 0;
+    position: relative;
+  }
+
+  .branch-col {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .branch-col .vert-line {
+    background: var(--border);
+  }
+
+  /* Cards */
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 16px 18px;
+    width: 190px;
+    cursor: pointer;
+    transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: var(--dept-color, var(--accent));
+    border-radius: 14px 14px 0 0;
+  }
+
+  .card:hover {
+    transform: translateY(-3px);
+    border-color: var(--dept-color, var(--accent));
+    box-shadow: 0 12px 32px rgba(0,0,0,0.4), 0 0 0 1px var(--dept-color, var(--accent))22;
+  }
+
+  .card.ceo {
+    width: 220px;
+    --dept-color: var(--gold);
+    background: linear-gradient(135deg, #1e1a0a, #1a1a24);
+  }
+
+  .card.highlighted { border-color: var(--dept-color, var(--accent)); }
+  .card.dimmed { opacity: 0.3; pointer-events: none; }
+
+  .card-avatar {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--dept-color, var(--accent)), var(--accent2));
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Syne', sans-serif;
+    font-weight: 700; font-size: 13px;
+    color: #fff;
+    margin-bottom: 10px;
+    flex-shrink: 0;
+  }
+
+  .card-name {
+    font-family: 'Syne', sans-serif;
+    font-size: 13px; font-weight: 600;
+    line-height: 1.3;
+    margin-bottom: 4px;
+  }
+
+  .card-role {
+    font-size: 11px;
+    color: var(--muted);
+    line-height: 1.4;
+    margin-bottom: 8px;
+  }
+
+  .card-salary {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 3px 8px;
+    font-size: 10px;
+    color: var(--gold);
+    font-weight: 500;
+  }
+
+  .card-dept {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    border-radius: 5px;
+    padding: 2px 7px;
+    font-size: 10px;
+    font-weight: 500;
+    margin-top: 4px;
+    background: color-mix(in srgb, var(--dept-color, var(--accent)) 15%, transparent);
+    color: var(--dept-color, var(--accent));
+  }
+
+  /* Modal */
+  .modal-overlay {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.7);
+    backdrop-filter: blur(8px);
+    z-index: 100;
+    display: none;
+    align-items: center;
+    justify-content: center;
+  }
+  .modal-overlay.open { display: flex; }
+
+  .modal {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 32px;
+    max-width: 440px;
+    width: 90%;
+    position: relative;
+    animation: pop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  @keyframes pop {
+    from { transform: scale(0.85); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+  }
+
+  .modal-close {
+    position: absolute; top: 16px; right: 16px;
+    background: var(--border); border: none; border-radius: 8px;
+    width: 28px; height: 28px;
+    color: var(--muted); cursor: pointer; font-size: 16px;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s;
+  }
+  .modal-close:hover { background: var(--accent); color: #fff; }
+
+  .modal-avatar {
+    width: 64px; height: 64px;
+    border-radius: 16px;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Syne', sans-serif;
+    font-weight: 800; font-size: 22px;
+    color: #fff;
+    margin-bottom: 16px;
+    background: linear-gradient(135deg, var(--m-color, var(--accent)), var(--accent2));
+  }
+
+  .modal-name {
+    font-family: 'Syne', sans-serif;
+    font-size: 22px; font-weight: 700;
+    margin-bottom: 4px;
+  }
+  .modal-role { font-size: 14px; color: var(--muted); margin-bottom: 20px; }
+
+  .modal-grid {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 12px; margin-bottom: 20px;
+  }
+
+  .modal-field {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 10px 14px;
+  }
+  .modal-field label {
+    display: block; font-size: 10px; color: var(--muted);
+    text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 4px;
+  }
+  .modal-field span {
+    font-size: 13px; font-weight: 500;
+  }
+  .modal-field.full { grid-column: 1 / -1; }
+
+  .modal-salary {
+    font-size: 20px !important;
+    font-family: 'Syne', sans-serif;
+    font-weight: 700 !important;
+    color: var(--gold) !important;
+  }
+
+  .tag {
+    display: inline-block;
+    background: color-mix(in srgb, var(--m-color, var(--accent)) 15%, transparent);
+    color: var(--m-color, var(--accent));
+    border-radius: 5px; padding: 2px 8px;
+    font-size: 11px; font-weight: 500; margin: 2px 2px 2px 0;
+  }
+
+  /* Legend */
+  .legend {
+    display: flex; gap: 16px; flex-wrap: wrap;
+    padding: 16px 48px;
+    border-top: 1px solid var(--border);
+    background: var(--surface);
+  }
+  .legend-item {
+    display: flex; align-items: center; gap: 6px;
+    font-size: 12px; color: var(--muted);
+  }
+  .legend-dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+  }
+
+  /* Responsive spacers for branches */
+  .spacer { width: 20px; flex-shrink: 0; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo-mark">RL</div>
+  <div>
+    <h1>Remote Latinos</h1>
+    <span>Organizational Chart — 27 Team Members</span>
+  </div>
+  <div class="controls">
+    <div class="dept-filter" id="deptFilter">
+      <button class="filter-btn active" onclick="filterDept('all')">All</button>
+      <button class="filter-btn" onclick="filterDept('Operations')">Operations</button>
+      <button class="filter-btn" onclick="filterDept('Platform Development')">Platform</button>
+      <button class="filter-btn" onclick="filterDept('Sales')">Sales</button>
+      <button class="filter-btn" onclick="filterDept('Content')">Content</button>
+      <button class="filter-btn" onclick="filterDept('Hiring Consultants')">Hiring</button>
+      <button class="filter-btn" onclick="filterDept('Recruiter')">Recruiting</button>
+    </div>
+  </div>
+</header>
+
+<div class="chart-wrapper">
+  <div class="tree" id="tree"></div>
+</div>
+
+<div class="legend">
+  <div class="legend-item"><div class="legend-dot" style="background:#ffd166"></div> CEO / Leadership</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#7c5cfc"></div> Operations</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#5cf0fc"></div> Platform Development</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#fc5c7d"></div> Sales</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#5cfc9a"></div> Content</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#fcb45c"></div> Hiring Consultants</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#c45cfc"></div> Recruiting</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#fc5c5c"></div> Finance / IT</div>
+</div>
+
+<!-- Modal -->
+<div class="modal-overlay" id="modalOverlay" onclick="closeModal(event)">
+  <div class="modal" id="modal">
+    <button class="modal-close" onclick="closeModalDirect()">✕</button>
+    <div class="modal-avatar" id="mAvatar"></div>
+    <div class="modal-name" id="mName"></div>
+    <div class="modal-role" id="mRole"></div>
+    <div class="modal-grid">
+      <div class="modal-field">
+        <label>Monthly Pay</label>
+        <span class="modal-salary" id="mSalary"></span>
+      </div>
+      <div class="modal-field">
+        <label>Contract</label>
+        <span id="mContract"></span>
+      </div>
+      <div class="modal-field">
+        <label>Department</label>
+        <span id="mDept"></span>
+      </div>
+      <div class="modal-field">
+        <label>Reports To</label>
+        <span id="mSupervisor"></span>
+      </div>
+      <div class="modal-field">
+        <label>Country</label>
+        <span id="mCountry"></span>
+      </div>
+      <div class="modal-field">
+        <label>Email</label>
+        <span id="mEmail" style="font-size:11px;word-break:break-all;"></span>
+      </div>
+      <div class="modal-field full">
+        <label>Teams / Labels</label>
+        <span id="mTags"></span>
+      </div>
+      <div class="modal-field full" id="mDescField" style="display:none">
+        <label>Role Description</label>
+        <span id="mDesc" style="font-size:12px; line-height:1.6; color:#b0b0c8;"></span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const DEPT_COLORS = {
+  'CEO': '#ffd166',
+  'Operations': '#7c5cfc',
+  'Platform Development': '#5cf0fc',
+  'Sales': '#fc5c7d',
+  'Content': '#5cfc9a',
+  'Hiring Consultants': '#fcb45c',
+  'Recruiter': '#c45cfc',
+  'Finance': '#fc5c5c',
+  'Marketing': '#ff9f68',
+  'It Support': '#68c8ff',
+};
+
+const employees = [
+  { name: 'Omer Bloch', role: 'CEO', dept: 'CEO', supervisor: null, salary: null, contract: null, country: 'United States', email: 'omer@remotelatinos.com', labels: ['CEO'], initials: 'OB' },
+  { name: 'Mar Alamo', role: 'Product Manager', dept: 'Operations', supervisor: 'Omer Bloch', salary: null, contract: null, country: 'Venezuela', email: 'mar@remotelatinos.com', labels: ['Platform Development', 'Operations'], initials: 'MA' },
+  { name: 'Manuel Renteria', role: 'Operations Manager', dept: 'Operations', supervisor: 'Omer Bloch', salary: null, contract: null, country: 'Colombia', email: 'manuel@remotelatinos.com', labels: ['Operations'], initials: 'MR' },
+  { name: 'Alejandro Bravo', role: 'Systems Specialist', dept: 'Finance', supervisor: 'Omer Bloch', salary: 3000, contract: 'Fixed', country: 'Argentina', email: 'alejandro@remotelatinos.com', labels: ['Finance', 'Operations', 'It Support'], initials: 'AB' },
+  { name: 'Esteban Andrade', role: 'Content Director', dept: 'Content', supervisor: 'Omer Bloch', salary: null, contract: null, country: '—', email: '—', labels: ['Content'], initials: 'EA' },
+  { name: 'Johan Giraldo', role: 'Hybrid Closer', dept: 'Sales', supervisor: 'Omer Bloch', salary: null, contract: 'By Commissions', country: 'Colombia', email: 'johan@remotelatinos.com', labels: ['Sales'], initials: 'JG' },
+  { name: 'Jane Ahmed', role: 'Appointment Setter', dept: 'Sales', supervisor: 'Omer Bloch', salary: null, contract: null, country: 'Egypt', email: 'jane@remotelatinos.com', labels: ['Sales'], initials: 'JA' },
+  { name: 'Michael Dutra', role: 'Hybrid Closer', dept: 'Sales', supervisor: 'Omer Bloch', salary: null, contract: null, country: 'United States', email: 'michael.d@remotelatinos.com', labels: ['Operations'], initials: 'MD' },
+  { name: 'Armani Taffa', role: 'Hybrid Closer', dept: 'Sales', supervisor: 'Omer Bloch', salary: null, contract: null, country: 'Spain', email: 'armani@remotelatinos.com', labels: ['Operations'], initials: 'AT' },
+  // Mar's reports
+  { name: 'Daniel Villa', role: 'QA Assistant', dept: 'Platform Development', supervisor: 'Mar Alamo', salary: null, contract: null, country: 'Bolivia', email: 'daniel@remotelatinos.com', labels: ['Platform Development'], initials: 'DV' },
+  { name: 'Luis Alvarez', role: 'Backend Developer', dept: 'Platform Development', supervisor: 'Mar Alamo', salary: null, contract: null, country: 'Venezuela', email: 'luis@remotelatinos.com', labels: ['Platform Development'], initials: 'LA' },
+  { name: 'Jeyson Lesmes', role: 'Full Stack Developer', dept: 'Platform Development', supervisor: 'Mar Alamo', salary: null, contract: null, country: 'Colombia', email: 'Jeyson@remotelatinos.com', labels: ['Platform Development'], initials: 'JL' },
+  { name: 'Laura Gómez', role: 'UI/UX Designer', dept: 'Platform Development', supervisor: 'Mar Alamo', salary: null, contract: null, country: 'Colombia', email: 'lauragomez@remotelatinos.com', labels: ['Platform Development'], initials: 'LG' },
+  { name: 'Daniel Amador', role: 'Frontend Developer', dept: 'Platform Development', supervisor: 'Mar Alamo', salary: null, contract: null, country: 'Colombia', email: 'daniel.amador@remotelatinos.com', labels: ['Platform Development'], initials: 'DA' },
+  // Manuel's reports
+  { name: 'Mateo Cortazar', role: 'Hiring Consultant', dept: 'Hiring Consultants', supervisor: 'Manuel Renteria', salary: null, contract: null, country: 'Colombia', email: 'mateo@remotelatinos.com', labels: ['Hiring Consultants'], initials: 'MC' },
+  { name: 'Minerva Solarte', role: 'Recruiter', dept: 'Recruiter', supervisor: 'Manuel Renteria', salary: 900, contract: 'Hourly', country: 'Venezuela', email: 'Minerva@remotelatinos.com', labels: ['Candidate Success', 'Recruiter'], initials: 'MS' },
+  { name: 'Luis Martinez', role: 'Systems Specialist', dept: 'Operations', supervisor: 'Manuel Renteria', salary: null, contract: null, country: 'Mexico', email: 'luis.m@remotelatinos.com', labels: ['Operations', 'It Support'], initials: 'LM' },
+  { name: 'Andres Sierra', role: 'SEO Specialist', dept: 'Platform Development', supervisor: 'Manuel Renteria', salary: null, contract: null, country: 'Venezuela', email: 'andres@remotelatinos.com', labels: ['Platform Development', 'Marketing'], initials: 'AS' },
+  { name: 'Laura Cortés', role: 'Project Operator', dept: 'Operations', supervisor: 'Manuel Renteria', salary: 1800, contract: 'Fixed', country: 'Colombia', email: 'laura.c@remotelatinos.com', labels: ['Operations'], initials: 'LC' },
+  // Mateo's reports
+  { name: 'Matt Chavez', role: 'Hiring Consultant', dept: 'Hiring Consultants', supervisor: 'Mateo Cortazar', salary: null, contract: null, country: 'Colombia', email: 'matt@remotelatinos.com', labels: ['Hiring Consultants'], initials: 'MCh' },
+  { name: 'Jorge Estrada', role: 'Hiring Consultant', dept: 'Hiring Consultants', supervisor: 'Mateo Cortazar', salary: null, contract: null, country: 'Colombia', email: 'jorge@remotelatinos.com', labels: ['Hiring Consultants'], initials: 'JE' },
+  // Minerva's reports
+  { name: 'Luisana López', role: 'Recruiter', dept: 'Recruiter', supervisor: 'Minerva Solarte', salary: null, contract: null, country: 'Venezuela', email: 'luisana@remotelatinos.com', labels: ['Candidate Success', 'Recruiter'], initials: 'LL' },
+  { name: 'Ricardo Bogotá', role: 'Recruiter', dept: 'Recruiter', supervisor: 'Minerva Solarte', salary: 900, contract: 'Hourly', country: 'Colombia', email: 'ricardo@remotelatinos.com', labels: ['Candidate Success', 'Recruiter'], initials: 'RB' },
+  // Esteban's reports
+  { name: 'MaFe Morales', role: 'Content Growth Manager', dept: 'Content', supervisor: 'Esteban Andrade', salary: 1500, contract: 'Fixed', country: 'Colombia', email: 'Maria@remotelatinos.com', labels: ['Content', 'Marketing'], initials: 'MM' },
+  { name: 'David Guataquira', role: 'Content Consultant', dept: 'Content', supervisor: 'Esteban Andrade', salary: null, contract: null, country: 'Colombia', email: 'david.g@remotelatinos.com', labels: ['Content'], initials: 'DG' },
+  { name: 'Paola Briñez', role: 'Content Growth Manager', dept: 'Content', supervisor: 'Esteban Andrade', salary: 1500, contract: 'Fixed', country: 'Colombia', email: 'paola.r@remotelatinos.com', labels: ['Content', 'Marketing'], initials: 'PB' },
+  // MaFe's reports
+  { name: 'David Borja', role: 'Video Editor & Graphic Design', dept: 'Content', supervisor: 'MaFe Morales', salary: null, contract: null, country: 'Colombia', email: 'david@remotelatinos.com', labels: ['Content'], initials: 'DB' },
+  { name: 'Vanessa Beltrán', role: 'Content Growth Manager', dept: 'Content', supervisor: 'MaFe Morales', salary: null, contract: null, country: 'American Samoa', email: 'Laura@remotelatinos.com', labels: ['Content'], initials: 'VB' },
+];
+
+function getDeptColor(dept) {
+  return DEPT_COLORS[dept] || '#7c5cfc';
+}
+
+function getInitials(name) {
+  return name.split(' ').slice(0,2).map(n => n[0]).join('').toUpperCase();
+}
+
+function formatSalary(salary, contract) {
+  if (!salary && contract === 'By Commissions') return 'Commission Only';
+  if (!salary) return 'Not Listed';
+  return '$' + salary.toLocaleString() + ' / mo';
+}
+
+function makeCard(emp, extraClass='') {
+  const color = getDeptColor(emp.dept);
+  const salaryStr = formatSalary(emp.salary, emp.contract);
+  return `
+    <div class="card ${extraClass}" 
+         style="--dept-color:${color}" 
+         onclick="openModal('${emp.name.replace(/'/g,"\\'")}')">
+      <div class="card-avatar">${getInitials(emp.name)}</div>
+      <div class="card-name">${emp.name}</div>
+      <div class="card-role">${emp.role}</div>
+      <div class="card-salary">💰 ${salaryStr}</div>
+      <div class="card-dept">${emp.dept}</div>
+    </div>`;
+}
+
+function buildTree() {
+  // CEO
+  const ceo = employees.find(e => e.role === 'CEO');
+  // L1 direct reports to CEO
+  const l1 = employees.filter(e => e.supervisor === 'Omer Bloch');
+  // Group: managers vs ICs at L1
+  const managers = ['Mar Alamo', 'Manuel Renteria', 'Esteban Andrade'];
+  const ceoICs = l1.filter(e => !managers.includes(e.name));
+  const ceoManagers = l1.filter(e => managers.includes(e.name));
+
+  let html = '';
+
+  // CEO
+  html += `<div class="level-connector">
+    ${makeCard(ceo, 'ceo')}
+    <div class="vert-line"></div>
+  </div>`;
+
+  // Main branch line across managers
+  const branchCount = ceoManagers.length + (ceoICs.length > 0 ? 1 : 0);
+  const branchWidth = branchCount * 210 + (branchCount - 1) * 20;
+  html += `<div style="width:${branchWidth}px;height:2px;background:var(--border);"></div>`;
+
+  // Build manager columns + ICs group
+  html += `<div class="branch-row" style="gap:20px;">`;
+
+  ceoManagers.forEach((mgr, i) => {
+    const reports = employees.filter(e => e.supervisor === mgr.name);
+    const subReports = {};
+    reports.forEach(r => {
+      subReports[r.name] = employees.filter(e => e.supervisor === r.name);
+    });
+
+    const totalLeaves = reports.reduce((acc, r) => acc + Math.max(subReports[r.name].length, 1), 0);
+    const colWidth = Math.max(totalLeaves * 210 + (totalLeaves-1)*20, 210);
+
+    html += `<div class="branch-col" style="width:${colWidth}px;">
+      <div class="vert-line"></div>
+      ${makeCard(mgr)}
+      <div class="vert-line"></div>`;
+
+    if (reports.length > 0) {
+      // sub-branch line
+      const subW = reports.length * 210 + (reports.length-1)*20;
+      html += `<div style="width:${subW}px;height:2px;background:var(--border);"></div>`;
+      html += `<div class="branch-row" style="gap:20px;">`;
+
+      reports.forEach(rep => {
+        const reps2 = subReports[rep.name];
+        const repColW = Math.max(reps2.length * 210 + (reps2.length-1)*20, 210);
+        html += `<div class="branch-col" style="width:${repColW}px;">
+          <div class="vert-line"></div>
+          ${makeCard(rep)}`;
+
+        if (reps2.length > 0) {
+          const subW2 = reps2.length * 210 + (reps2.length-1)*20;
+          html += `<div class="vert-line"></div>`;
+          html += `<div style="width:${subW2}px;height:2px;background:var(--border);"></div>`;
+          html += `<div class="branch-row" style="gap:20px;">`;
+          reps2.forEach(r2 => {
+            html += `<div class="branch-col">
+              <div class="vert-line"></div>
+              ${makeCard(r2)}
+            </div>`;
+          });
+          html += `</div>`;
+        }
+
+        html += `</div>`;
+      });
+      html += `</div>`;
+    }
+    html += `</div>`;
+  });
+
+  // CEO ICs column
+  if (ceoICs.length > 0) {
+    const icW = ceoICs.length * 210 + (ceoICs.length-1)*20;
+    html += `<div class="branch-col" style="width:${icW}px; align-items:flex-start;">
+      <div style="margin-left:95px;" class="vert-line"></div>
+      <div style="font-family:'Syne',sans-serif;font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;padding-left:4px;">Direct ICs</div>
+      <div class="branch-row" style="gap:20px;align-items:flex-start;">`;
+
+    ceoICs.forEach(emp => {
+      html += `<div class="branch-col">
+        ${makeCard(emp)}
+      </div>`;
+    });
+
+    html += `</div></div>`;
+  }
+
+  html += `</div>`;
+  document.getElementById('tree').innerHTML = html;
+}
+
+function openModal(name) {
+  const emp = employees.find(e => e.name === name);
+  if (!emp) return;
+  const color = getDeptColor(emp.dept);
+  document.getElementById('modal').style.setProperty('--m-color', color);
+  document.getElementById('mAvatar').textContent = getInitials(emp.name);
+  document.getElementById('mName').textContent = emp.name;
+  document.getElementById('mRole').textContent = emp.role;
+  document.getElementById('mSalary').textContent = formatSalary(emp.salary, emp.contract);
+  document.getElementById('mContract').textContent = emp.contract || '—';
+  document.getElementById('mDept').textContent = emp.dept;
+  document.getElementById('mSupervisor').textContent = emp.supervisor || 'No supervisor (Top)';
+  document.getElementById('mCountry').textContent = emp.country || '—';
+  document.getElementById('mEmail').textContent = emp.email || '—';
+  document.getElementById('mTags').innerHTML = (emp.labels || []).map(l => `<span class="tag">${l}</span>`).join('');
+  document.getElementById('modalOverlay').classList.add('open');
+}
+
+function closeModal(e) {
+  if (e.target === document.getElementById('modalOverlay')) closeModalDirect();
+}
+function closeModalDirect() {
+  document.getElementById('modalOverlay').classList.remove('open');
+}
+
+function filterDept(dept) {
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  event.target.classList.add('active');
+  document.querySelectorAll('.card').forEach(card => {
+    if (dept === 'all') {
+      card.classList.remove('dimmed');
+    } else {
+      const emp = employees.find(e => e.name === card.querySelector('.card-name')?.textContent);
+      if (emp && (emp.dept === dept || emp.labels.includes(dept))) {
+        card.classList.remove('dimmed');
+      } else {
+        card.classList.add('dimmed');
+      }
+    }
+  });
+}
+
+buildTree();
+
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModalDirect(); });
+</script>
+</body>
+</html>
